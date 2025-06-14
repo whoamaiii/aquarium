@@ -3,15 +3,30 @@ import type { IWorld } from 'bitecs'
 import { Mood, Position, Velocity, CulturalTag } from './components'
 import { world } from './world' // For å få tilgang til alle entiteter for globale sjekker
 
-// --- Konstanter og Tilstand for Festivalen ---
+// --- Konstanter for Festivalen ---
 const HAPPINESS_THRESHOLD = 0.8;
 const TICKS_FOR_HIGH_HAPPINESS_TO_TRIGGER_FESTIVAL = 30 * 10; // 30 sekunder * 10 ticks/sekund
 const FESTIVAL_DURATION_TICKS = 60 * 10; // Festival varer i 60 sekunder
 
-let ticksWithHighHappiness = 0;
+// --- Eksporterbar Tilstand for Festivalen ---
+export let ticksWithHighHappiness = 0;
 export let isSpiralDanceActive = false; // Global flagg for motorløkken
-let festivalEndTick = 0; // Når nåværende festival slutter (basert på game ticks)
-let currentTick = 0; // Enkel tick-teller for systemet
+export let festivalEndTick = 0; // Når nåværende festival slutter (basert på game ticks)
+export let currentTick = 0; // Enkel tick-teller for systemet
+
+// --- Settere for Tilstanden (brukes av persistence.ts) ---
+export function setTicksWithHighHappiness(value: number) {
+  ticksWithHighHappiness = value;
+}
+export function setIsSpiralDanceActive(value: boolean) {
+  isSpiralDanceActive = value;
+}
+export function setFestivalEndTick(value: number) {
+  festivalEndTick = value;
+}
+export function setCurrentTick(value: number) {
+  currentTick = value;
+}
 
 const moodQuery = defineQuery([Mood]);
 const festivalParticipantQuery = defineQuery([Position, Velocity, CulturalTag, Mood]); // Mood for evt. å stoppe dans hvis ulykkelig

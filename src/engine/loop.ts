@@ -60,4 +60,27 @@ export async function startEngineLoop() {
   initializeFestivalState();
 
   requestAnimationFrame(gameLoop)
+}
+
+// Ny funksjon for å re-initialisere systemer etter lasting av tilstand
+export async function reinitializeEngineSystemsAfterLoad(): Promise<void> {
+  console.log("Reinitializing engine systems after state load...");
+  try {
+    // Re-initialiser Boids GPU-systemet, da bufferne må oppdateres med den nye tilstanden
+    isBoidsGpuSystemReady = await initBoidsComputeSystem();
+    if (isBoidsGpuSystemReady) {
+      console.log("Boids GPU system reinitialized successfully after load.");
+    } else {
+      console.warn("Boids GPU system failed to reinitialize after load. Falling back to CPU movement.");
+    }
+    // Andre systemer som trenger re-initialisering kan legges til her
+    // initializeSocialState(); // Kanskje ikke nødvendig hvis loadState håndterer det
+    // initializeFestivalState(); // Kanskje ikke nødvendig hvis loadState håndterer det
+
+  } catch (error) {
+    console.error("Error reinitializing engine systems after load:", error);
+    isBoidsGpuSystemReady = false;
+    console.warn("Falling back to CPU movement due to reinitialization error.");
+  }
+  console.log("Engine systems reinitialization attempt finished.");
 } 
