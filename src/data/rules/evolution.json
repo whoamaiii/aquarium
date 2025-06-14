@@ -1,0 +1,14 @@
+{
+  "rules": [
+    {
+      "ruleName": "SweetFoodDigestion",
+      "trigger": {
+        "foodType": "sweet" 
+      },
+      "effect": {
+        "energyChange": 10,
+        "moodHappinessChange": 0.1 
+      }
+    }
+  ]
+} 

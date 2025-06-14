@@ -1,6 +1,7 @@
 import { world } from './world'
 import { movementSystem } from './systems'
 import { boidsComputeSystem, initBoidsComputeSystem } from './boidsComputeSystem'
+import { metabolismSystem } from './metabolismSystem'
 
 const TICK_RATE = 10 // Hz
 const TICK_INTERVAL = 1000 / TICK_RATE
@@ -16,6 +17,8 @@ async function engineTick() {
   } else {
     movementSystem(world); // Fallback til CPU-bevegelse hvis GPU ikke er klar
   }
+
+  metabolismSystem(world);
 }
 
 function gameLoop(currentTime: number) {

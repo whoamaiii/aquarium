@@ -1,11 +1,10 @@
 import { world } from '@/engine/world'
-import { Position, Velocity } from '@/engine/components' // Assuming Velocity might be needed later for visuals
+import { Position, Velocity, Phenotype } from '@/engine/components' // La til Phenotype
 import { defineQuery } from 'bitecs'
 import { useLayoutEffect, useState } from 'react'
 
-// Query for entities that have Position. We might want to render entities
-// even if they don't have velocity, or have other components.
-const renderableQuery = defineQuery([Position])
+// Query for entities that have Position and Phenotype for rendering
+const renderableQuery = defineQuery([Position, Phenotype])
 
 export function useEngine() {
   // We store the query result (array of entity IDs) in state 
@@ -27,6 +26,7 @@ export function useEngine() {
     world,
     entities, // Array of entity IDs
     Position, // Direct access to Position component data
-    Velocity  // Direct access to Velocity component data (if needed for rendering)
+    Velocity, // Direct access to Velocity component data (if needed for rendering)
+    Phenotype  // Direct access to Phenotype component data
   }
 } 
