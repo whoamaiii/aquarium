@@ -6,9 +6,9 @@ import boidsShaderCode from '@/gpu/boids.wgsl?raw'
 const NUM_ENTITIES = 10000; // Matcher init.ts
 const WORKGROUP_SIZE = 64; // Matcher workgroup_size i boids.wgsl
 
-// Boids parametere (kan gjøres dynamiske senere)
-const SIM_PARAMS = {
-  delta_time: 1 / 10, // Fra TICK_RATE i loop.ts (10 Hz)
+// Boids parametere - gjøres eksporterbar og muterbar for Leva
+export let boidsConfig = {
+  delta_time: 1 / 10, // Normalt satt fra TICK_RATE, men kan justeres for effekt
   cohesion_factor: 0.02,
   separation_factor: 0.8,
   alignment_factor: 0.05,
@@ -36,11 +36,9 @@ const PARTICLE_NUM_FLOATS = 6;
 const PARTICLE_STRIDE_BYTES = PARTICLE_NUM_FLOATS * Float32Array.BYTES_PER_ELEMENT; // 24 bytes
 const PARTICLES_BUFFER_SIZE = NUM_ENTITIES * PARTICLE_STRIDE_BYTES;
 
-// SimParams struct: 1 u32 (num_particles) + 11 f32 = 4 + 44 = 48 bytes
-// num_particles: u32, delta_time: f32, cohesion_factor: f32, separation_factor: f32, 
-// alignment_factor: f32, perception_radius: f32, separation_distance: f32, 
-// max_speed: f32, max_force: f32, world_size_x: f32, world_size_y: f32, world_size_z: f32
-const SIM_PARAMS_SIZE = Uint32Array.BYTES_PER_ELEMENT + (Object.keys(SIM_PARAMS).length) * Float32Array.BYTES_PER_ELEMENT;
+// SIM_PARAMS_SIZE beregnes nå basert på boidsConfig
+// +1 for num_particles (u32), resten er f32
+const SIM_PARAMS_SIZE = Uint32Array.BYTES_PER_ELEMENT + (Object.keys(boidsConfig).length) * Float32Array.BYTES_PER_ELEMENT;
 
 export async function initBoidsComputeSystem(): Promise<boolean> {
   if (!navigator.gpu) {
@@ -108,9 +106,11 @@ export async function initBoidsComputeSystem(): Promise<boolean> {
 }
 
 const particleDataForGPU = new Float32Array(NUM_ENTITIES * PARTICLE_NUM_FLOATS);
+// Buffer for sim params må lages med korrekt størrelse ift boidsConfig
 const simParamsDataForGPU = new ArrayBuffer(SIM_PARAMS_SIZE);
 const simParamsViewU32 = new Uint32Array(simParamsDataForGPU, 0, 1);
-const simParamsViewF32 = new Float32Array(simParamsDataForGPU, 4);
+// Offset for f32 view er 4 bytes (størrelsen på u32)
+const simParamsViewF32 = new Float32Array(simParamsDataForGPU, Uint32Array.BYTES_PER_ELEMENT);
 
 export async function boidsComputeSystem() {
   if (!device || !pipeline || !bindGroup || !simParamsBuffer || !particlesInGPUBuffer || !particlesOutGPUBuffer || !stagingGPUBuffer) {
@@ -119,12 +119,8 @@ export async function boidsComputeSystem() {
   }
 
   const entities = particleQuery(world);
-  if (entities.length !== NUM_ENTITIES) {
-    // This system assumes a fixed number of entities matching NUM_ENTITIES
-    // console.warn(`Mismatch in entity count: ECS (${entities.length}) vs GPU (${NUM_ENTITIES})`);
-    // For now, we'll proceed but this could lead to issues if not handled.
-    // If entities can change, the GPU setup (buffers, NUM_ENTITIES param) needs to be dynamic.
-  }
+  // Ingen sjekk mot NUM_ENTITIES her, da antall entiteter kan variere med lagring/lasting
+  // Shaderen mottar faktisk antall partikler via simParamsViewU32[0]
 
   // 1. Prepare data for GPU
   // Particle data (pos, vel)
@@ -138,21 +134,22 @@ export async function boidsComputeSystem() {
     particleDataForGPU[offset + 4] = Velocity.y[eid];
     particleDataForGPU[offset + 5] = Velocity.z[eid];
   }
+  // Skriv kun for det faktiske antallet entiteter
   device.queue.writeBuffer(particlesInGPUBuffer, 0, particleDataForGPU, 0, entities.length * PARTICLE_NUM_FLOATS);
 
   // Sim params data
-  simParamsViewU32[0] = NUM_ENTITIES;
-  simParamsViewF32[0] = SIM_PARAMS.delta_time;
-  simParamsViewF32[1] = SIM_PARAMS.cohesion_factor;
-  simParamsViewF32[2] = SIM_PARAMS.separation_factor;
-  simParamsViewF32[3] = SIM_PARAMS.alignment_factor;
-  simParamsViewF32[4] = SIM_PARAMS.perception_radius;
-  simParamsViewF32[5] = SIM_PARAMS.separation_distance;
-  simParamsViewF32[6] = SIM_PARAMS.max_speed;
-  simParamsViewF32[7] = SIM_PARAMS.max_force;
-  simParamsViewF32[8] = SIM_PARAMS.world_size_x;
-  simParamsViewF32[9] = SIM_PARAMS.world_size_y;
-  simParamsViewF32[10] = SIM_PARAMS.world_size_z;
+  simParamsViewU32[0] = entities.length; // Bruk faktisk antall entiteter
+  simParamsViewF32[0] = boidsConfig.delta_time;
+  simParamsViewF32[1] = boidsConfig.cohesion_factor;
+  simParamsViewF32[2] = boidsConfig.separation_factor;
+  simParamsViewF32[3] = boidsConfig.alignment_factor;
+  simParamsViewF32[4] = boidsConfig.perception_radius;
+  simParamsViewF32[5] = boidsConfig.separation_distance;
+  simParamsViewF32[6] = boidsConfig.max_speed;
+  simParamsViewF32[7] = boidsConfig.max_force;
+  simParamsViewF32[8] = boidsConfig.world_size_x;
+  simParamsViewF32[9] = boidsConfig.world_size_y;
+  simParamsViewF32[10] = boidsConfig.world_size_z;
   device.queue.writeBuffer(simParamsBuffer, 0, simParamsDataForGPU);
 
   // 2. Create command encoder and dispatch compute shader
@@ -160,8 +157,11 @@ export async function boidsComputeSystem() {
   const passEncoder = commandEncoder.beginComputePass();
   passEncoder.setPipeline(pipeline);
   passEncoder.setBindGroup(0, bindGroup);
-  const numWorkgroups = Math.ceil(NUM_ENTITIES / WORKGROUP_SIZE);
-  passEncoder.dispatchWorkgroups(numWorkgroups);
+  // Bruk faktisk antall entiteter for å beregne workgroups
+  const numWorkgroups = Math.ceil(entities.length / WORKGROUP_SIZE);
+  if (numWorkgroups > 0) { // Unngå å kalle dispatchWorkgroups med 0
+      passEncoder.dispatchWorkgroups(numWorkgroups);
+  }
   passEncoder.end();
 
   // 3. Copy result from output buffer to staging buffer
@@ -170,15 +170,15 @@ export async function boidsComputeSystem() {
     0, // Source offset
     stagingGPUBuffer,
     0, // Destination offset
-    PARTICLES_BUFFER_SIZE
+    entities.length * PARTICLE_STRIDE_BYTES // Kopier kun for faktiske data
   );
 
   // 4. Submit commands
   device.queue.submit([commandEncoder.finish()]);
 
   // 5. Read results from staging buffer
-  await stagingGPUBuffer.mapAsync(GPUMapMode.READ, 0, PARTICLES_BUFFER_SIZE);
-  const resultsArrayBuffer = stagingGPUBuffer.getMappedRange(0, PARTICLES_BUFFER_SIZE);
+  await stagingGPUBuffer.mapAsync(GPUMapMode.READ, 0, entities.length * PARTICLE_STRIDE_BYTES);
+  const resultsArrayBuffer = stagingGPUBuffer.getMappedRange(0, entities.length * PARTICLE_STRIDE_BYTES);
   const resultsData = new Float32Array(resultsArrayBuffer.slice(0)); // Create a copy
   stagingGPUBuffer.unmap();
 

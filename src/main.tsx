@@ -6,6 +6,8 @@ import { Scene } from '@/components/Scene'
 import { initializeEntities } from '@/engine/init'
 import { startEngineLoop, reinitializeEngineSystemsAfterLoad } from '@/engine/loop'
 import { saveState, loadState } from '@/engine/persistence'
+import { HUD } from '@/ui/HUD'
+import { DebugPanel } from '@/ui/DebugPanel'
 
 const AUTOSAVE_INTERVAL = 60000; // 1 minutt
 
@@ -71,11 +73,15 @@ function App() {
   }, []); // Tomt avhengighetsarray sikrer at denne effekten kun kjøres én gang (ved mount/unmount)
 
   return (
-    <Canvas camera={{ position: [0, 0, 70], fov: 50 }}>
-      <ambientLight intensity={Math.PI / 2} />
-      <directionalLight position={[10, 10, 10]} intensity={1} />
-      <Scene />
-    </Canvas>
+    <React.Fragment>
+      <DebugPanel /> {/* Leva panel for Boids config etc. */}
+      <HUD /> {/* Heads-up display */}
+      <Canvas camera={{ position: [0, 0, 70], fov: 50 }}>
+        <ambientLight intensity={Math.PI / 2} />
+        <directionalLight position={[10, 10, 10]} intensity={1} />
+        <Scene />
+      </Canvas>
+    </React.Fragment>
   );
 }
 
