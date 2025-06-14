@@ -7,6 +7,7 @@ import {
   Stomach,
   Energy,
   Mood,
+  CulturalTag,
 } from './components'
 import { world } from './world'
 
@@ -48,6 +49,10 @@ export function initializeEntities() {
 
     addComponent(world, Mood, eid)
     Mood.happiness[eid] = 0 // Nøytral stemning ved start
+
+    // Kulturkomponent
+    addComponent(world, CulturalTag, eid)
+    CulturalTag.isDancingSpiral[eid] = 0 // Ikke dansende ved start
   }
   console.log(
     `Initialized ${NUM_ENTITIES} entities with Position, Velocity, Genome, Phenotype, Stomach, Energy, and Mood.`,

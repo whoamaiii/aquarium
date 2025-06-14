@@ -3,6 +3,7 @@ import { movementSystem } from './systems'
 import { boidsComputeSystem, initBoidsComputeSystem } from './boidsComputeSystem'
 import { metabolismSystem } from './metabolismSystem'
 import { socialSystem, initializeSocialState } from './socialSystem'
+import { festivalSystem, initializeFestivalState } from './festivalSystem'
 
 const TICK_RATE = 10 // Hz
 const TICK_INTERVAL = 1000 / TICK_RATE
@@ -22,6 +23,8 @@ async function engineTick() {
   metabolismSystem(world);
 
   socialSystem(world);
+
+  festivalSystem(world);
 }
 
 function gameLoop(currentTime: number) {
@@ -54,6 +57,7 @@ export async function startEngineLoop() {
 
   // Initialiser sosial tilstand (f.eks. relasjonskart)
   initializeSocialState();
+  initializeFestivalState();
 
   requestAnimationFrame(gameLoop)
 } 

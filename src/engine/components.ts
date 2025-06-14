@@ -38,4 +38,13 @@ export const Energy = defineComponent({
 export const Mood = defineComponent({
   happiness: Types.f32, // F.eks. fra -1 (ulykkelig) til 1 (lykkelig)
   // Andre stemninger kan legges til her (frykt, nysgjerrighet etc.)
+})
+
+// Fase 4.2: Kulturkomponenter
+export const CulturalTag = defineComponent({
+  isDancingSpiral: Types.ui8, // 0 for false, 1 for true
+  // Fremtidige kulturelle tags kan legges til her
+  // spiralDanceTargetX: Types.f32, // Midlertidig mål for dansen
+  // spiralDanceTargetZ: Types.f32,
+  // spiralDanceAngle: Types.f32, // Nåværende vinkel i spiralen
 }) 
