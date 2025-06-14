@@ -2,6 +2,7 @@ import { world } from './world'
 import { movementSystem } from './systems'
 import { boidsComputeSystem, initBoidsComputeSystem } from './boidsComputeSystem'
 import { metabolismSystem } from './metabolismSystem'
+import { socialSystem, initializeSocialState } from './socialSystem'
 
 const TICK_RATE = 10 // Hz
 const TICK_INTERVAL = 1000 / TICK_RATE
@@ -19,6 +20,8 @@ async function engineTick() {
   }
 
   metabolismSystem(world);
+
+  socialSystem(world);
 }
 
 function gameLoop(currentTime: number) {
@@ -48,6 +51,9 @@ export async function startEngineLoop() {
     isBoidsGpuSystemReady = false;
     console.warn("Engine Loop: Falling back to CPU movement due to error.");
   }
+
+  // Initialiser sosial tilstand (f.eks. relasjonskart)
+  initializeSocialState();
 
   requestAnimationFrame(gameLoop)
 } 

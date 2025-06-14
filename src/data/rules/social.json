@@ -1,0 +1,20 @@
+{
+  "rules": [
+    {
+      "verb": "Groom",
+      "preconditions": {
+        "distance_lt": 2,
+        "relationship_gt": 0.1
+      },
+      "effects": {
+        "target": {
+          "moodHappinessChange": 0.2
+        },
+        "initiator": {
+          "energyChange": -2
+        },
+        "relationshipChange": 0.05
+      }
+    }
+  ]
+} 
