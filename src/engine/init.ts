@@ -1,4 +1,4 @@
-import { addComponent, addEntity } from 'bitecs'
+import { addComponent, addEntity, type IWorld } from 'bitecs' // Added IWorld for type annotation
 import {
   Position,
   Velocity,
@@ -11,48 +11,65 @@ import {
 } from './components'
 import { world } from './world'
 
+/** The default number of entities to create when the simulation starts. */
 const NUM_ENTITIES = 10000
 
-export function initializeEntities() {
+/**
+ * Initializes the default set of entities in the simulation.
+ * This function populates the `bitECS` world with a predefined number of entities,
+ * each configured with a standard set of components and initial randomized or default values.
+ * This serves as the starting state for the simulation.
+ * @param {IWorld} currentWorld - The bitECS world instance to populate.
+ */
+export function initializeEntities(currentWorld: IWorld = world) { // Default to global world, allow override for testing
   for (let i = 0; i < NUM_ENTITIES; i++) {
-    const eid = addEntity(world)
+    const eid = addEntity(currentWorld); // Create a new entity
 
-    // Bevegelseskomponenter (eksisterende)
-    addComponent(world, Position, eid)
-    Position.x[eid] = Math.random() * 100 - 50 // Tilfeldig X mellom -50 og 50
-    Position.y[eid] = Math.random() * 100 - 50 // Tilfeldig Y mellom -50 og 50
-    Position.z[eid] = Math.random() * 100 - 50 // Tilfeldig Z mellom -50 og 50
+    // --- Movement Components ---
+    // Assigns a position to the entity.
+    addComponent(currentWorld, Position, eid);
+    // Initialize position randomly within a defined cube (e.g., -50 to +50 for each axis).
+    Position.x[eid] = Math.random() * 100 - 50; // Random X between -50 and 50
+    Position.y[eid] = Math.random() * 100 - 50; // Random Y between -50 and 50
+    Position.z[eid] = Math.random() * 100 - 50; // Random Z between -50 and 50
 
-    addComponent(world, Velocity, eid)
-    // Initial hastighet kan settes her hvis ønskelig, f.eks. tilfeldig eller null
-    Velocity.x[eid] = (Math.random() - 0.5) * 2 // Tilfeldig X-hastighet mellom -1 og 1
-    Velocity.y[eid] = (Math.random() - 0.5) * 2 // Tilfeldig Y-hastighet mellom -1 og 1
-    Velocity.z[eid] = (Math.random() - 0.5) * 2 // Tilfeldig Z-hastighet mellom -1 og 1
+    // Assigns a velocity to the entity.
+    addComponent(currentWorld, Velocity, eid);
+    // Initialize velocity randomly, creating varied initial movement.
+    Velocity.x[eid] = (Math.random() - 0.5) * 2; // Random X-velocity between -1 and 1
+    Velocity.y[eid] = (Math.random() - 0.5) * 2; // Random Y-velocity between -1 and 1
+    Velocity.z[eid] = (Math.random() - 0.5) * 2; // Random Z-velocity between -1 and 1
 
-    // Nye kreaturkomponenter
-    addComponent(world, Genome, eid)
-    Genome.id[eid] = i // Enkel unik ID basert på loop-indeks
+    // --- Creature Feature Components ---
+    // Assigns a genome to the entity.
+    addComponent(currentWorld, Genome, eid);
+    Genome.id[eid] = i; // Simple unique ID based on loop index; placeholder for more complex genetics.
 
-    addComponent(world, Phenotype, eid)
-    Phenotype.r[eid] = Math.random() // Tilfeldig rødfarge
-    Phenotype.g[eid] = Math.random() // Tilfeldig grønnfarge
-    Phenotype.b[eid] = Math.random() // Tilfeldig blåfarge
-    Phenotype.size[eid] = 0.5 + Math.random() * 0.5 // Størrelse mellom 0.5 og 1.0
+    // Assigns a phenotype (visual characteristics) to the entity.
+    addComponent(currentWorld, Phenotype, eid);
+    Phenotype.r[eid] = Math.random();       // Random red color component.
+    Phenotype.g[eid] = Math.random();       // Random green color component.
+    Phenotype.b[eid] = Math.random();       // Random blue color component.
+    Phenotype.size[eid] = 0.5 + Math.random() * 0.5; // Random size between 0.5 and 1.0.
 
-    addComponent(world, Stomach, eid)
-    Stomach.foodTypeToDigest[eid] = 0 // Tom mage ved start
-    Stomach.amountToDigest[eid] = 0
+    // Assigns a stomach to the entity for digestion.
+    addComponent(currentWorld, Stomach, eid);
+    Stomach.foodTypeToDigest[eid] = 0; // Stomach is initially empty.
+    Stomach.amountToDigest[eid] = 0;   // No food amount initially.
 
-    addComponent(world, Energy, eid)
-    Energy.current[eid] = 70 + Math.random() * 30 // Energi mellom 70 og 100
-    Energy.max[eid] = 100
+    // Assigns energy levels to the entity.
+    addComponent(currentWorld, Energy, eid);
+    Energy.current[eid] = 70 + Math.random() * 30; // Initial energy between 70 and 100.
+    Energy.max[eid] = 100;                         // Maximum energy capacity.
 
-    addComponent(world, Mood, eid)
-    Mood.happiness[eid] = 0 // Nøytral stemning ved start
+    // Assigns a mood state to the entity.
+    addComponent(currentWorld, Mood, eid);
+    Mood.happiness[eid] = 0; // Starts with a neutral mood.
 
-    // Kulturkomponent
-    addComponent(world, CulturalTag, eid)
-    CulturalTag.isDancingSpiral[eid] = 0 // Ikke dansende ved start
+    // --- Cultural Components ---
+    // Assigns cultural tags or states to the entity.
+    addComponent(currentWorld, CulturalTag, eid);
+    CulturalTag.isDancingSpiral[eid] = 0; // Entity is not participating in a spiral dance at start.
   }
   console.log(
     `Initialized ${NUM_ENTITIES} entities with Position, Velocity, Genome, Phenotype, Stomach, Energy, and Mood.`,

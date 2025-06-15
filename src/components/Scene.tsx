@@ -1,3 +1,24 @@
+/**
+ * @file Scene.tsx
+ * This React component is responsible for setting up and rendering the main 3D scene
+ * of the simulation using React Three Fiber (`@react-three/fiber`).
+ *
+ * Key responsibilities include:
+ * - Potentially setting up the R3F `Canvas` (though often the Canvas is in a higher-level component like App.tsx).
+ * - Including common 3D scene elements like lights (e.g., `ambientLight`, `directionalLight`)
+ *   and camera controls (e.g., `OrbitControls` from `@react-three/drei`), although these might be
+ *   placed directly in the `Canvas` component elsewhere or alongside this Scene component.
+ * - The primary task of this component is rendering the visual representation of the
+ *   simulation entities (boids/creatures). It achieves this by:
+ *     - Accessing entity data (like position and phenotype for color/size) from the simulation engine
+ *       via the `useEngine` hook.
+ *     - Efficiently rendering these entities, typically using an `InstancedMesh` for performance,
+ *       where each instance represents an entity. The properties of each instance (matrix for position/scale,
+ *       and color) are updated each frame based on the latest engine data.
+ *
+ * This component forms a crucial part of the application's rendering pipeline, bridging the gap
+ * between the underlying simulation logic and its visual presentation on screen.
+ */
 import { useRef, useLayoutEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
