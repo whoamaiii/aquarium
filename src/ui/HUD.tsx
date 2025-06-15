@@ -1,6 +1,27 @@
+/**
+ * @file HUD.tsx
+ * This React component renders the Heads-Up Display (HUD) for the simulation.
+ * The HUD provides users with at-a-glance information about the current state
+ * of the simulation. This includes:
+ *
+ * - Key simulation statistics:
+ *   - Number of active entities (creatures).
+ *   - Average mood (happiness) of all entities.
+ *
+ * - Status of global systems:
+ *   - Whether a festival (e.g., "SpiralDance") is currently active.
+ *
+ * - Information from `engineState.ts`:
+ *   (Note: Current implementation directly queries some engine data,
+ *   but future enhancements could make it consume `engineState.ts` for
+ *   last save time, critical error messages, and saving indicators.)
+ *
+ * The component periodically polls the simulation world and relevant system states
+ * to keep the displayed information up-to-date.
+ */
 import React, { useState, useEffect } from 'react';
 import { world } from '@/engine/world';
-import { Mood, Position } from '@/engine/components'; // Position for å telle faktiske kreaturer
+import { Mood, Position } from '@/engine/components'; // Position for counting actual creatures
 import { isSpiralDanceActive as getFestivalStatus } from '@/engine/festivalSystem';
 import { defineQuery } from 'bitecs';
 

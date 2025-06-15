@@ -1,3 +1,17 @@
+/**
+ * @file DebugPanel.tsx
+ * This React component is responsible for rendering the debug control panel for the simulation.
+ * It utilizes the `leva` library to provide a user interface with real-time adjustable controls
+ * for various simulation parameters, primarily focusing on the Boids algorithm settings
+ * imported from `boidsConfig` (see `src/engine/boidsComputeSystem.ts`).
+ *
+ * The panel allows developers and users to experiment with different settings such as
+ * cohesion, separation, alignment factors, perception radius, maximum speed, and world boundaries.
+ * Changes made in the Leva panel directly mutate the `boidsConfig` object,
+ * allowing immediate observation of their effects on the running simulation.
+ * This component itself does not render any visible DOM elements directly; Leva handles
+ * the global rendering of its control panel.
+ */
 import { useControls, folder } from 'leva'
 import { boidsConfig } from '@/engine/boidsComputeSystem'
 
